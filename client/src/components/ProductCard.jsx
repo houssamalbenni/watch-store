@@ -61,7 +61,8 @@ const ProductCard = ({ product }) => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleWhatsApp}
-                className="bg-[#25D366] text-white p-3 hover:bg-[#1da851]"
+                disabled={product.stock === 0}
+                className="bg-[#25D366] text-white p-3 hover:bg-[#1da851] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaWhatsapp className="w-5 h-5" />
               </motion.button>
@@ -69,7 +70,8 @@ const ProductCard = ({ product }) => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleAddToCart}
-                className="bg-luxury-gold text-luxury-black p-3 hover:bg-luxury-gold-light"
+                disabled={product.stock === 0}
+                className="bg-luxury-gold text-luxury-black p-3 hover:bg-luxury-gold-light disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <HiOutlineShoppingBag className="w-5 h-5" />
               </motion.button>
@@ -77,6 +79,11 @@ const ProductCard = ({ product }) => {
 
             {/* Badges */}
             <div className="absolute top-3 left-3 flex flex-col gap-2">
+              {product.stock === 0 && (
+                <span className="bg-red-600 text-white text-[10px] px-3 py-1 tracking-wider uppercase font-semibold">
+                  Out of Stock
+                </span>
+              )}
               {product.featured && (
                 <span className="bg-luxury-gold text-luxury-black text-[10px] px-3 py-1 tracking-wider uppercase font-semibold">
                   Featured

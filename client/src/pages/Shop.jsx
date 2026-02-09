@@ -78,9 +78,6 @@ const Shop = () => {
   const hasActiveFilters =
     filters.brand || filters.gender || filters.strapMaterial || filters.featured || filters.minPrice || filters.maxPrice;
 
-  // Filter out out-of-stock products on frontend as well (for safety)
-  const visibleProducts = items.filter((p) => p.stock > 0);
-
   return (
     <div className="pt-6 pb-16 min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
@@ -337,7 +334,7 @@ const Shop = () => {
                   <ProductCardSkeleton key={i} />
                 ))}
               </div>
-            ) : visibleProducts.length === 0 ? (
+            ) : items.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-luxury-gray text-lg">No watches found matching your criteria.</p>
                 <button onClick={clearFilters} className="mt-4 btn-outline text-sm">
@@ -347,7 +344,7 @@ const Shop = () => {
             ) : (
               <>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                  {visibleProducts.map((p) => (
+                  {items.map((p) => (
                     <ProductCard key={p._id} product={p} />
                   ))}
                 </div>

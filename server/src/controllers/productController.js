@@ -17,8 +17,6 @@ export const getProducts = async (req, res, next) => {
     } = req.query;
 
     const filter = {};
-    // Hide out-of-stock products from customers
-    filter.stock = { $gt: 0 };
     if (brand) filter.brand = { $regex: brand, $options: 'i' };
     if (gender) {
       // Include unisex products with men/women
@@ -37,16 +35,16 @@ export const getProducts = async (req, res, next) => {
 
     const skip = (Number(page) - 1) * Number(limit);
     
-    // If filtering by gender, prioritize featured products first
-    let sortOptions = sort;
+    // Sort by stock first (in-stock products shown first), then by other criteria
+    let sortOptions = { stock: -1 }; // In-stock first
     if (gender) {
-      sortOptions = { featured: -1 }; // Featured first
-      // Then apply the requested sort
-      if (sort === '-createdAt') sortOptions.createdAt = -1;
-      else if (sort === 'price') sortOptions.price = 1;
-      else if (sort === '-price') sortOptions.price = -1;
-      else if (sort === 'title') sortOptions.title = 1;
+      sortOptions.featured = -1; // Then featured
     }
+    // Then apply the requested sort
+    if (sort === '-createdAt') sortOptions.createdAt = -1;
+    else if (sort === 'price') sortOptions.price = 1;
+    else if (sort === '-price') sortOptions.price = -1;
+    else if (sort === 'title') sortOptions.title = 1;
     
     const [products, total] = await Promise.all([
       Product.find(filter).sort(sortOptions).skip(skip).limit(Number(limit)),

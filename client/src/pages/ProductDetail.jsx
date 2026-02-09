@@ -122,19 +122,28 @@ const ProductDetail = () => {
             {/* Description */}
             <p className="mt-6 text-luxury-gray leading-relaxed">{product.description}</p>
 
+            {/* Stock Status */}
+            {product.stock === 0 && (
+              <div className="mt-4 px-4 py-2 bg-red-600/20 border border-red-600 rounded text-red-500 text-sm">
+                This product is currently out of stock
+              </div>
+            )}
+
             {/* Quantity + Add to Cart */}
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <div className="flex items-center border border-luxury-gray-dark">
                 <button
                   onClick={() => setQty(Math.max(1, qty - 1))}
-                  className="px-4 py-3 text-luxury-gray hover:text-luxury-gold transition-colors"
+                  className="px-4 py-3 text-luxury-gray hover:text-luxury-gold transition-colors disabled:opacity-50"
+                  disabled={product.stock === 0}
                 >
                   <HiMinus className="w-4 h-4" />
                 </button>
                 <span className="px-6 py-3 text-center min-w-[60px]">{qty}</span>
                 <button
-                  onClick={() => setQty(qty + 1)}
-                  className="px-4 py-3 text-luxury-gray hover:text-luxury-gold transition-colors"
+                  onClick={() => setQty(Math.min(product.stock, qty + 1))}
+                  className="px-4 py-3 text-luxury-gray hover:text-luxury-gold transition-colors disabled:opacity-50"
+                  disabled={product.stock === 0}
                 >
                   <HiPlus className="w-4 h-4" />
                 </button>
@@ -142,7 +151,8 @@ const ProductDetail = () => {
 
               <button
                 onClick={handleAddToCart}
-                className="btn-primary flex-1 flex items-center justify-center gap-3"
+                disabled={product.stock === 0}
+                className="btn-primary flex-1 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <HiOutlineShoppingBag className="w-5 h-5" />
                 Add to Cart
