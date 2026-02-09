@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import compression from 'compression';
+import mongoose from 'mongoose';
 
 import config from './config/index.js';
 import connectDB from './config/db.js';
@@ -65,8 +66,16 @@ app.use('/api/users', userRoutes);
 // ── Serve uploaded images ──
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
-// Health
-app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+// Health — also warms DB connection
+app.get('/api/health', async (_req, res) => {
+  try {
+    const dbState = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+    const state = dbState[mongoose.connection.readyState] || 'unknown';
+    res.json({ status: 'ok', db: state, uptime: process.uptime() });
+  } catch {
+    res.status(503).json({ status: 'error' });
+  }
+});
 
 // ── Error handler ──
 app.use(errorHandler);

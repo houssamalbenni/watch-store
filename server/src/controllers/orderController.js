@@ -1,6 +1,11 @@
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 
+// In-memory cache for stats (5 minutes)
+let statsCache = null;
+let statsCacheTime = null;
+const STATS_CACHE_DURATION = 5 * 60 * 1000;
+
 /** POST /api/orders  (user) */
 export const createOrder = async (req, res, next) => {
   try {
@@ -95,32 +100,43 @@ export const updateOrderStatus = async (req, res, next) => {
 /** GET /api/orders/stats  (admin) — simple analytics */
 export const getStats = async (req, res, next) => {
   try {
-    const totalOrders = await Order.countDocuments();
-    const revenue = await Order.aggregate([
-      { $match: { status: { $ne: 'cancelled' } } },
-      { $group: { _id: null, total: { $sum: '$total' } } },
-    ]);
-    const bestSellers = await Order.aggregate([
-      { $unwind: '$items' },
-      {
-        $group: {
-          _id: '$items.productId',
-          title: { $first: '$items.title' },
-          totalSold: { $sum: '$items.qty' },
+    // Return cached stats if fresh
+    if (statsCache && statsCacheTime && Date.now() - statsCacheTime < STATS_CACHE_DURATION) {
+      res.set('Cache-Control', 'private, max-age=300');
+      return res.json(statsCache);
+    }
+
+    const [totalOrders, revenue, bestSellers, totalProducts] = await Promise.all([
+      Order.countDocuments(),
+      Order.aggregate([
+        { $match: { status: { $ne: 'cancelled' } } },
+        { $group: { _id: null, total: { $sum: '$total' } } },
+      ]),
+      Order.aggregate([
+        { $unwind: '$items' },
+        {
+          $group: {
+            _id: '$items.productId',
+            title: { $first: '$items.title' },
+            totalSold: { $sum: '$items.qty' },
+          },
         },
-      },
-      { $sort: { totalSold: -1 } },
-      { $limit: 5 },
+        { $sort: { totalSold: -1 } },
+        { $limit: 5 },
+      ]),
+      Product.countDocuments(),
     ]);
 
-    const totalProducts = await Product.countDocuments();
-
-    res.json({
+    statsCache = {
       totalOrders,
       totalRevenue: revenue[0]?.total || 0,
       totalProducts,
       bestSellers,
-    });
+    };
+    statsCacheTime = Date.now();
+
+    res.set('Cache-Control', 'private, max-age=300');
+    res.json(statsCache);
   } catch (err) {
     next(err);
   }

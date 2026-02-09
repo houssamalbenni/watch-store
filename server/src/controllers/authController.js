@@ -124,5 +124,12 @@ export const logout = async (req, res, next) => {
 
 /** GET /api/auth/me */
 export const me = async (req, res) => {
-  res.json({ user: req.user });
+  try {
+    const user = await User.findById(req.user._id).select('-passwordHash -refreshToken').lean();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.set('Cache-Control', 'private, max-age=60');
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 };

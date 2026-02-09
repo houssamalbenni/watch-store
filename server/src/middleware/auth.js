@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import config from '../config/index.js';
-import User from '../models/User.js';
 
 /** Verify access token from cookie or Authorization header */
 const authenticate = async (req, res, next) => {
@@ -18,13 +17,8 @@ const authenticate = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, config.jwt.accessSecret);
-    const user = await User.findById(decoded.id).select('-passwordHash -refreshToken');
-
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
-    }
-
-    req.user = user;
+    // Attach decoded token data directly — no DB query needed
+    req.user = { _id: decoded.id, role: decoded.role };
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {
