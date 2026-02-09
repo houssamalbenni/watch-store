@@ -12,6 +12,7 @@ router.get('/:id', ctrl.getProduct);
 
 // Admin only
 router.post('/', authenticate, requireAdmin, validate(productSchema), ctrl.createProduct);
+router.post('/:id/duplicate', authenticate, requireAdmin, ctrl.duplicateProduct);
 router.put('/:id', authenticate, requireAdmin, validate(productUpdateSchema), ctrl.updateProduct);
 router.delete('/:id', authenticate, requireAdmin, ctrl.deleteProduct);
 

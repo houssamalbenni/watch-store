@@ -115,6 +115,24 @@ export const deleteProduct = async (req, res, next) => {
   }
 };
 
+/** POST /api/products/:id/duplicate  (admin) - Duplicate a product */
+export const duplicateProduct = async (req, res, next) => {
+  try {
+    const original = await Product.findById(req.params.id).lean();
+    if (!original) return res.status(404).json({ message: 'Product not found' });
+
+    // Remove _id and timestamps, add "(Copy)" to title
+    const { _id, createdAt, updatedAt, ...productData } = original;
+    productData.title = `${productData.title} (Copy)`;
+    productData.featured = false; // Don't duplicate featured status
+
+    const duplicate = await Product.create(productData);
+    res.status(201).json(duplicate);
+  } catch (err) {
+    next(err);
+  }
+};
+
 /** GET /api/products/filters/available — public, get available filter options */
 export const getAvailableFilters = async (req, res, next) => {
   try {
