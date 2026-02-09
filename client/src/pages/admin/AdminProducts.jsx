@@ -43,9 +43,11 @@ const AdminProducts = () => {
   const handleDuplicate = async (id, title) => {
     if (!window.confirm(`Duplicate "${title}"?`)) return;
     try {
-      await api.post(`/products/${id}/duplicate`);
-      toast.success('Product duplicated successfully');
-      fetchProducts(page);
+      const { data } = await api.post(`/products/${id}/duplicate`);
+      toast.success(`"${data.title}" created successfully`);
+      
+      // Add new product to current list instead of refetching
+      setProducts(prev => [data, ...prev]);
     } catch {
       toast.error('Failed to duplicate product');
     }
