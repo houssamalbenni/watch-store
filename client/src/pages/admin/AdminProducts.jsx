@@ -14,7 +14,7 @@ const AdminProducts = () => {
   const fetchProducts = async (pg = 1) => {
     setLoading(true);
     try {
-      const { data } = await api.get('/products', { params: { page: pg, limit: 10 } });
+      const { data } = await api.get('/products', { params: { page: pg, limit: 10, admin: 'true' } });
       setProducts(data.products);
       setTotalPages(data.totalPages);
       setPage(data.page);
