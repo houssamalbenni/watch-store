@@ -7,6 +7,8 @@ export const getUsers = async (req, res, next) => {
       .select('-passwordHash -refreshToken')
       .sort('-createdAt')
       .lean();
+    
+    res.set('Cache-Control', 'private, max-age=120');
     res.json(users);
   } catch (err) {
     next(err);

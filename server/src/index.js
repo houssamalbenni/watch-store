@@ -6,6 +6,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import compression from 'compression';
 
 import config from './config/index.js';
 import connectDB from './config/db.js';
@@ -32,6 +33,7 @@ app.use(
     credentials: true,
   })
 );
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

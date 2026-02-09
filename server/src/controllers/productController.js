@@ -1,5 +1,10 @@
 import Product from '../models/Product.js';
 
+// Simple in-memory cache for filters (15 minutes)
+let filtersCache = null;
+let filtersCacheTime = null;
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
+
 /** GET /api/products  — public, with filters + pagination */
 export const getProducts = async (req, res, next) => {
   try {
@@ -47,10 +52,11 @@ export const getProducts = async (req, res, next) => {
     else if (sort === 'title') sortOptions.title = 1;
     
     const [products, total] = await Promise.all([
-      Product.find(filter).sort(sortOptions).skip(skip).limit(Number(limit)),
+      Product.find(filter).sort(sortOptions).skip(skip).limit(Number(limit)).lean(),
       Product.countDocuments(filter),
     ]);
 
+    res.set('Cache-Control', 'public, max-age=300');
     res.json({
       products,
       page: Number(page),
@@ -65,8 +71,9 @@ export const getProducts = async (req, res, next) => {
 /** GET /api/products/:id */
 export const getProduct = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).lean();
     if (!product) return res.status(404).json({ message: 'Product not found' });
+    res.set('Cache-Control', 'public, max-age=600');
     res.json(product);
   } catch (err) {
     next(err);
@@ -111,17 +118,27 @@ export const deleteProduct = async (req, res, next) => {
 /** GET /api/products/filters/available — public, get available filter options */
 export const getAvailableFilters = async (req, res, next) => {
   try {
+    // Return cached filters if available and not expired
+    if (filtersCache && filtersCacheTime && Date.now() - filtersCacheTime < CACHE_DURATION) {
+      res.set('Cache-Control', 'public, max-age=900');
+      return res.json(filtersCache);
+    }
+
     const [brands, strapMaterials, genders] = await Promise.all([
       Product.distinct('brand'),
       Product.distinct('specifications.strapMaterial'),
       Product.distinct('specifications.gender'),
     ]);
 
-    res.json({
+    filtersCache = {
       brands: brands.filter(Boolean).sort(),
       strapMaterials: strapMaterials.filter(Boolean).sort(),
       genders: genders.filter(Boolean).sort(),
-    });
+    };
+    filtersCacheTime = Date.now();
+
+    res.set('Cache-Control', 'public, max-age=900');
+    res.json(filtersCache);
   } catch (err) {
     next(err);
   }

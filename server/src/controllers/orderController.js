@@ -6,11 +6,17 @@ export const createOrder = async (req, res, next) => {
   try {
     const order = await Order.create({ ...req.body, userId: req.user._id });
 
-    // Decrement stock
-    for (const item of order.items) {
-      await Product.findByIdAndUpdate(item.productId, {
-        $inc: { stock: -item.qty },
-      });
+    // Bulk update stock - much faster than loop
+    const bulkOps = order.items.map(item => (
+      {
+        updateOne: {
+          filter: { _id: item.productId },
+          update: { $inc: { stock: -item.qty } },
+        },
+      }
+    ));
+    if (bulkOps.length > 0) {
+      await Product.bulkWrite(bulkOps);
     }
 
     res.status(201).json(order);
@@ -22,8 +28,25 @@ export const createOrder = async (req, res, next) => {
 /** GET /api/orders/my  (user) */
 export const getMyOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find({ userId: req.user._id }).sort('-createdAt');
-    res.json(orders);
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+    
+    const [orders, total] = await Promise.all([
+      Order.find({ userId: req.user._id })
+        .sort('-createdAt')
+        .skip(skip)
+        .limit(Number(limit))
+        .lean(),
+      Order.countDocuments({ userId: req.user._id }),
+    ]);
+    
+    res.set('Cache-Control', 'private, max-age=60');
+    res.json({
+      orders,
+      page: Number(page),
+      totalPages: Math.ceil(total / Number(limit)),
+      total,
+    });
   } catch (err) {
     next(err);
   }
@@ -38,10 +61,16 @@ export const getAllOrders = async (req, res, next) => {
 
     const skip = (Number(page) - 1) * Number(limit);
     const [orders, total] = await Promise.all([
-      Order.find(filter).sort('-createdAt').skip(skip).limit(Number(limit)).populate('userId', 'name email'),
+      Order.find(filter)
+        .sort('-createdAt')
+        .skip(skip)
+        .limit(Number(limit))
+        .populate('userId', 'name email')
+        .lean(),
       Order.countDocuments(filter),
     ]);
 
+    res.set('Cache-Control', 'private, max-age=30');
     res.json({ orders, page: Number(page), totalPages: Math.ceil(total / Number(limit)), total });
   } catch (err) {
     next(err);
