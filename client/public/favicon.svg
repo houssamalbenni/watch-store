@@ -6,7 +6,34 @@
       <stop offset="100%" style="stop-color:#B8960C"/>
     </linearGradient>
   </defs>
-  <circle cx="32" cy="32" r="30" fill="#0a0a0a" stroke="url(#gold)" stroke-width="2.5"/>
-  <circle cx="32" cy="32" r="26" fill="none" stroke="url(#gold)" stroke-width="0.5" opacity="0.5"/>
-  <text x="32" y="44" font-family="Georgia, serif" font-size="34" font-weight="700" fill="url(#gold)" text-anchor="middle" letter-spacing="-1">S</text>
+  <!-- Watch strap top -->
+  <rect x="24" y="2" width="16" height="10" rx="2" fill="url(#gold)" opacity="0.7"/>
+  <!-- Watch strap bottom -->
+  <rect x="24" y="52" width="16" height="10" rx="2" fill="url(#gold)" opacity="0.7"/>
+  <!-- Watch case outer -->
+  <circle cx="32" cy="32" r="22" fill="#0a0a0a" stroke="url(#gold)" stroke-width="3"/>
+  <!-- Watch case inner ring -->
+  <circle cx="32" cy="32" r="18.5" fill="none" stroke="url(#gold)" stroke-width="0.5" opacity="0.6"/>
+  <!-- Crown/button (right side) -->
+  <rect x="53" y="29" width="5" height="6" rx="1.5" fill="url(#gold)"/>
+  <!-- Hour markers -->
+  <line x1="32" y1="15" x2="32" y2="18" stroke="url(#gold)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="32" y1="46" x2="32" y2="49" stroke="url(#gold)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="15" y1="32" x2="18" y2="32" stroke="url(#gold)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="46" y1="32" x2="49" y2="32" stroke="url(#gold)" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Small hour markers -->
+  <circle cx="40.5" cy="17.5" r="0.8" fill="url(#gold)" opacity="0.7"/>
+  <circle cx="46" cy="23" r="0.8" fill="url(#gold)" opacity="0.7"/>
+  <circle cx="46" cy="41" r="0.8" fill="url(#gold)" opacity="0.7"/>
+  <circle cx="40.5" cy="46.5" r="0.8" fill="url(#gold)" opacity="0.7"/>
+  <circle cx="23.5" cy="17.5" r="0.8" fill="url(#gold)" opacity="0.7"/>
+  <circle cx="18" cy="23" r="0.8" fill="url(#gold)" opacity="0.7"/>
+  <circle cx="18" cy="41" r="0.8" fill="url(#gold)" opacity="0.7"/>
+  <circle cx="23.5" cy="46.5" r="0.8" fill="url(#gold)" opacity="0.7"/>
+  <!-- Hour hand -->
+  <line x1="32" y1="32" x2="32" y2="20" stroke="url(#gold)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Minute hand -->
+  <line x1="32" y1="32" x2="43" y2="26" stroke="url(#gold)" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Center dot -->
+  <circle cx="32" cy="32" r="2" fill="url(#gold)"/>
 </svg>
