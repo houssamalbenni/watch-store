@@ -119,15 +119,6 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* Stock */}
-            <p className="mt-4 text-sm">
-              {product.stock > 0 ? (
-                <span className="text-green-400">In Stock ({product.stock} available)</span>
-              ) : (
-                <span className="text-red-400">Out of Stock</span>
-              )}
-            </p>
-
             {/* Description */}
             <p className="mt-6 text-luxury-gray leading-relaxed">{product.description}</p>
 
@@ -142,7 +133,7 @@ const ProductDetail = () => {
                 </button>
                 <span className="px-6 py-3 text-center min-w-[60px]">{qty}</span>
                 <button
-                  onClick={() => setQty(Math.min(product.stock, qty + 1))}
+                  onClick={() => setQty(qty + 1)}
                   className="px-4 py-3 text-luxury-gray hover:text-luxury-gold transition-colors"
                 >
                   <HiPlus className="w-4 h-4" />
@@ -151,8 +142,7 @@ const ProductDetail = () => {
 
               <button
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
-                className="btn-primary flex-1 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary flex-1 flex items-center justify-center gap-3"
               >
                 <HiOutlineShoppingBag className="w-5 h-5" />
                 Add to Cart

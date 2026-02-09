@@ -17,6 +17,8 @@ export const getProducts = async (req, res, next) => {
     } = req.query;
 
     const filter = {};
+    // Hide out-of-stock products from customers
+    filter.stock = { $gt: 0 };
     if (brand) filter.brand = { $regex: brand, $options: 'i' };
     if (gender) {
       // Include unisex products with men/women
