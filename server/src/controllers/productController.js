@@ -40,12 +40,8 @@ export const getProducts = async (req, res, next) => {
 
     const skip = (Number(page) - 1) * Number(limit);
     
-    // Sort by stock first (in-stock products shown first), then by other criteria
-    let sortOptions = { stock: -1 }; // In-stock first
-    if (gender) {
-      sortOptions.featured = -1; // Then featured
-    }
-    // Then apply the requested sort
+    // Sort by displayOrder first (for custom manual ordering), then by other criteria
+    let sortOptions = { displayOrder: 1 };
     if (sort === '-createdAt') sortOptions.createdAt = -1;
     else if (sort === 'price') sortOptions.price = 1;
     else if (sort === '-price') sortOptions.price = -1;
@@ -56,7 +52,12 @@ export const getProducts = async (req, res, next) => {
       Product.countDocuments(filter),
     ]);
 
-    res.set('Cache-Control', 'public, max-age=300');
+    const isAdminList = req.query.admin === 'true';
+    if (isAdminList) {
+      res.set('Cache-Control', 'no-store');
+    } else {
+      res.set('Cache-Control', 'public, max-age=300');
+    }
     res.json({
       products,
       page: Number(page),
@@ -157,6 +158,27 @@ export const getAvailableFilters = async (req, res, next) => {
 
     res.set('Cache-Control', 'public, max-age=900');
     res.json(filtersCache);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/** POST /api/products/reorder  (admin) - Reorder products */
+export const reorderProducts = async (req, res, next) => {
+  try {
+    const { productIds } = req.body;
+
+    if (!Array.isArray(productIds)) {
+      return res.status(400).json({ message: 'productIds must be an array' });
+    }
+
+    // Update displayOrder for each product based on array index
+    const updates = productIds.map((id, index) =>
+      Product.findByIdAndUpdate(id, { displayOrder: index }, { new: true })
+    );
+
+    await Promise.all(updates);
+    res.json({ message: 'Products reordered successfully' });
   } catch (err) {
     next(err);
   }

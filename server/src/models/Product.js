@@ -56,6 +56,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: 'watches',
     },
+    displayOrder: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
@@ -63,6 +67,7 @@ const productSchema = new mongoose.Schema(
 productSchema.index({ brand: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ featured: 1 });
+productSchema.index({ displayOrder: 1 });
 productSchema.index({ 'specifications.gender': 1 });
 productSchema.index({ title: 'text', brand: 'text', description: 'text' });
 

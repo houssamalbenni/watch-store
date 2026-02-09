@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineStar, HiOutlineDuplicate } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineStar, HiOutlineDuplicate, HiOutlineArrowsExpand, HiOutlineCheck, HiOutlineX } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import api from '../../lib/api';
 
@@ -10,6 +10,8 @@ const AdminProducts = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [reorderMode, setReorderMode] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState(null);
 
   const fetchProducts = async (pg = 1) => {
     setLoading(true);
@@ -63,13 +65,75 @@ const AdminProducts = () => {
     }
   };
 
+  const handleDragStart = (index) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (dropIndex) => {
+    if (draggedIndex === null || draggedIndex === dropIndex) return;
+
+    const newProducts = [...products];
+    const draggedProduct = newProducts[draggedIndex];
+    newProducts.splice(draggedIndex, 1);
+    newProducts.splice(dropIndex, 0, draggedProduct);
+    setProducts(newProducts);
+    setDraggedIndex(null);
+  };
+
+  const saveReorder = async () => {
+    try {
+      const productIds = products.map(p => p._id);
+      await api.post('/products/reorder', { productIds });
+      toast.success('Product order saved successfully!');
+      setReorderMode(false);
+      fetchProducts(page);
+    } catch {
+      toast.error('Failed to save product order');
+    }
+  };
+
+  const cancelReorder = () => {
+    setReorderMode(false);
+    fetchProducts(page);
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-serif">Products</h1>
-        <Link to="/control-panel/products/new" className="btn-primary flex items-center gap-2">
-          <HiOutlinePlus className="w-4 h-4" /> Add Product
-        </Link>
+        <div className="flex items-center gap-3">
+          {reorderMode && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={saveReorder}
+                className="btn-primary flex items-center gap-2 bg-green-600 hover:bg-green-700"
+              >
+                <HiOutlineCheck className="w-4 h-4" /> Save Order
+              </button>
+              <button
+                onClick={cancelReorder}
+                className="btn-secondary flex items-center gap-2"
+              >
+                <HiOutlineX className="w-4 h-4" /> Cancel
+              </button>
+            </div>
+          )}
+          {!reorderMode && (
+            <button
+              onClick={() => setReorderMode(true)}
+              className="btn-secondary flex items-center gap-2"
+            >
+              <HiOutlineArrowsExpand className="w-4 h-4" /> Reorder
+            </button>
+          )}
+          <Link to="/control-panel/products/new" className="btn-primary flex items-center gap-2">
+            <HiOutlinePlus className="w-4 h-4" /> Add Product
+          </Link>
+        </div>
       </div>
 
       {loading ? (
@@ -103,10 +167,23 @@ const AdminProducts = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.05 }}
-                    className="border-b border-luxury-gray-dark/10 hover:bg-luxury-dark/50 transition-colors"
+                    draggable={reorderMode}
+                    onDragStart={() => handleDragStart(i)}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(i)}
+                    className={`border-b border-luxury-gray-dark/10 transition-colors ${
+                      reorderMode
+                        ? draggedIndex === i
+                          ? 'bg-luxury-gold/20 opacity-50'
+                          : 'hover:bg-luxury-dark/50 cursor-move'
+                        : 'hover:bg-luxury-dark/50'
+                    }`}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
+                        {reorderMode && (
+                          <span className="text-luxury-gray text-sm font-medium w-6">{i + 1}</span>
+                        )}
                         <div className="w-12 h-12 bg-luxury-dark overflow-hidden flex-shrink-0">
                           <img
                             src={product.images?.[0] || 'https://via.placeholder.com/50'}
@@ -138,7 +215,7 @@ const AdminProducts = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button onClick={() => toggleFeatured(product)}>
+                      <button onClick={() => toggleFeatured(product)} disabled={reorderMode}>
                         <HiOutlineStar
                           className={`w-5 h-5 transition-colors ${
                             product.featured ? 'text-luxury-gold fill-luxury-gold' : 'text-luxury-gray hover:text-luxury-gold'
@@ -147,29 +224,31 @@ const AdminProducts = () => {
                       </button>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          to={`/control-panel/products/edit/${product._id}`}
-                          className="p-2 text-luxury-gray hover:text-luxury-gold transition-colors"
-                          title="Edit"
-                        >
-                          <HiOutlinePencil className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => handleDuplicate(product._id, product.title)}
-                          className="p-2 text-luxury-gray hover:text-blue-400 transition-colors"
-                          title="Duplicate"
-                        >
-                          <HiOutlineDuplicate className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product._id, product.title)}
-                          className="p-2 text-luxury-gray hover:text-red-400 transition-colors"
-                          title="Delete"
-                        >
-                          <HiOutlineTrash className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {!reorderMode && (
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            to={`/control-panel/products/edit/${product._id}`}
+                            className="p-2 text-luxury-gray hover:text-luxury-gold transition-colors"
+                            title="Edit"
+                          >
+                            <HiOutlinePencil className="w-4 h-4" />
+                          </Link>
+                          <button
+                            onClick={() => handleDuplicate(product._id, product.title)}
+                            className="p-2 text-luxury-gray hover:text-blue-400 transition-colors"
+                            title="Duplicate"
+                          >
+                            <HiOutlineDuplicate className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product._id, product.title)}
+                            className="p-2 text-luxury-gray hover:text-red-400 transition-colors"
+                            title="Delete"
+                          >
+                            <HiOutlineTrash className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </motion.tr>
                 ))}
