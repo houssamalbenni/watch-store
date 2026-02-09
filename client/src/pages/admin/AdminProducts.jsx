@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineStar } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineStar, HiOutlineDuplicate } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import api from '../../lib/api';
 
@@ -37,6 +37,17 @@ const AdminProducts = () => {
       fetchProducts(page);
     } catch {
       toast.error('Failed to delete product');
+    }
+  };
+
+  const handleDuplicate = async (id, title) => {
+    if (!window.confirm(`Duplicate "${title}"?`)) return;
+    try {
+      await api.post(`/products/${id}/duplicate`);
+      toast.success('Product duplicated successfully');
+      fetchProducts(page);
+    } catch {
+      toast.error('Failed to duplicate product');
     }
   };
 
@@ -138,12 +149,21 @@ const AdminProducts = () => {
                         <Link
                           to={`/control-panel/products/edit/${product._id}`}
                           className="p-2 text-luxury-gray hover:text-luxury-gold transition-colors"
+                          title="Edit"
                         >
                           <HiOutlinePencil className="w-4 h-4" />
                         </Link>
                         <button
+                          onClick={() => handleDuplicate(product._id, product.title)}
+                          className="p-2 text-luxury-gray hover:text-blue-400 transition-colors"
+                          title="Duplicate"
+                        >
+                          <HiOutlineDuplicate className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => handleDelete(product._id, product.title)}
                           className="p-2 text-luxury-gray hover:text-red-400 transition-colors"
+                          title="Delete"
                         >
                           <HiOutlineTrash className="w-4 h-4" />
                         </button>

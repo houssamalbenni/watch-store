@@ -1,14 +1,29 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../lib/api';
 
-export const fetchProducts = createAsyncThunk('products/fetchProducts', async (params = {}, { rejectWithValue }) => {
-  try {
-    const { data } = await api.get('/products', { params });
-    return data;
-  } catch (err) {
-    return rejectWithValue(err.response?.data?.message || 'Failed to fetch products');
+// Cancel previous in-flight requests
+let fetchProductsAbort = null;
+
+export const fetchProducts = createAsyncThunk(
+  'products/fetchProducts',
+  async (params = {}, { rejectWithValue, signal }) => {
+    try {
+      // Cancel previous request if still pending
+      if (fetchProductsAbort) fetchProductsAbort.abort();
+      const controller = new AbortController();
+      fetchProductsAbort = controller;
+
+      const { data } = await api.get('/products', { params, signal: controller.signal });
+      fetchProductsAbort = null;
+      return data;
+    } catch (err) {
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+        return rejectWithValue(null); // silently ignore cancelled
+      }
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch products');
+    }
   }
-});
+);
 
 export const fetchProductById = createAsyncThunk('products/fetchById', async (id, { rejectWithValue }) => {
   try {

@@ -6,6 +6,7 @@ const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 15000, // 15s timeout — fail fast instead of hanging
 });
 
 // Request interceptor – attach token
