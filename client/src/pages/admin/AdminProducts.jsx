@@ -13,13 +13,16 @@ const AdminProducts = () => {
   const [reorderMode, setReorderMode] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState(null);
 
-  const fetchProducts = async (pg = 1) => {
+  const fetchProducts = async (pg = 1, loadAll = false) => {
     setLoading(true);
     try {
-      const { data } = await api.get('/products', { params: { page: pg, limit: 10, admin: 'true' } });
+      const params = loadAll
+        ? { limit: 9999, admin: 'true' }
+        : { page: pg, limit: 10, admin: 'true' };
+      const { data } = await api.get('/products', { params });
       setProducts(data.products);
-      setTotalPages(data.totalPages);
-      setPage(data.page);
+      setTotalPages(loadAll ? 1 : data.totalPages);
+      setPage(loadAll ? 1 : data.page);
     } catch {
       toast.error('Failed to load products');
     } finally {
@@ -125,7 +128,7 @@ const AdminProducts = () => {
           )}
           {!reorderMode && (
             <button
-              onClick={() => setReorderMode(true)}
+              onClick={() => { setReorderMode(true); fetchProducts(1, true); }}
               className="btn-secondary flex items-center gap-2"
             >
               <HiOutlineArrowsExpand className="w-4 h-4" /> Reorder
@@ -257,8 +260,8 @@ const AdminProducts = () => {
             </table>
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
+          {/* Pagination — hidden in reorder mode */}
+          {totalPages > 1 && !reorderMode && (
             <div className="flex justify-center gap-2 mt-8">
               {Array.from({ length: totalPages }).map((_, i) => (
                 <button
