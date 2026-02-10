@@ -40,6 +40,7 @@ const Shop = () => {
       if (v) params[k] = v;
     });
     dispatch(fetchProducts(params));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [searchParams, dispatch]);
 
   useEffect(() => {

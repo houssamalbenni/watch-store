@@ -57,10 +57,10 @@ const App = () => {
     axios.get(`${API_URL}/health`).catch(() => {});
   }, [dispatch]);
 
-  // Scroll to top on route change
+  // Scroll to top on route change (including query params like pagination)
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   if (!initialized) return <LoadingScreen />;
 
