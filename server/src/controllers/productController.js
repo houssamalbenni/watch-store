@@ -40,12 +40,19 @@ export const getProducts = async (req, res, next) => {
 
     const skip = (Number(page) - 1) * Number(limit);
     
-    // Sort by displayOrder first (for custom manual ordering), then by other criteria
-    let sortOptions = { displayOrder: 1 };
-    if (sort === '-createdAt') sortOptions.createdAt = -1;
-    else if (sort === 'price') sortOptions.price = 1;
-    else if (sort === '-price') sortOptions.price = -1;
-    else if (sort === 'title') sortOptions.title = 1;
+    // Only use displayOrder as primary sort for default (newest) view
+    let sortOptions = {};
+    if (sort === '-createdAt') {
+      sortOptions = { displayOrder: 1, createdAt: -1 };
+    } else if (sort === 'price') {
+      sortOptions = { price: 1 };
+    } else if (sort === '-price') {
+      sortOptions = { price: -1 };
+    } else if (sort === 'title') {
+      sortOptions = { title: 1 };
+    } else {
+      sortOptions = { displayOrder: 1, createdAt: -1 };
+    }
     
     const [products, total] = await Promise.all([
       Product.find(filter).sort(sortOptions).skip(skip).limit(Number(limit)).lean(),
