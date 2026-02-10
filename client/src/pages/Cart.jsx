@@ -121,7 +121,7 @@ const Cart = () => {
 
               <a
                 href={`https://wa.me/96181391688?text=${encodeURIComponent(
-                  `Hello, I'd like to order:\n${items.map(item => `• ${item.title} x${item.qty} - $${((item.discountPrice || item.price) * item.qty).toLocaleString()}`).join('\n')}\n\nTotal: $${grandTotal.toLocaleString()}`
+                  `Hello, I'd like to order:\n${items.map(item => `• ${item.title} x${item.qty} - $${((item.discountPrice || item.price) * item.qty).toLocaleString()}\n  ${window.location.origin}/product/${item.productId}`).join('\n')}\n\nTotal: $${grandTotal.toLocaleString()}`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
