@@ -10,7 +10,6 @@
  * - Privacy-compliant hashing
  */
 
-import fetch from 'node-fetch';
 import crypto from 'crypto';
 import logger from '../config/logger.js';
 
