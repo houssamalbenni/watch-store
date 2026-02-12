@@ -45,10 +45,3 @@ router.delete('/', authenticate, requireAdmin, resetLinkClicks);
 router.delete('/:id', authenticate, requireAdmin, deleteLinkClick);
 
 export default router;
-
-/**
- * Delete specific link click (admin only)
- */
-router.delete('/:id', deleteLinkClick);
-
-export default router;
