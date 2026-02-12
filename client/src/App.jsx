@@ -4,6 +4,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchMe } from './store/slices/authSlice';
 import axios from 'axios';
 
+// Meta Pixel Hooks
+import { useInitializeMetaPixel, useTrackPageView } from './hooks/useMetaPixel';
+
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Layout — always loaded
@@ -31,6 +34,7 @@ const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const AdminProductForm = lazy(() => import('./pages/admin/AdminProductForm'));
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+const AdminLinkClicks = lazy(() => import('./pages/admin/AdminLinkClicks'));
 
 // Minimal fallback for lazy chunks
 const PageLoader = () => (
@@ -43,6 +47,12 @@ const App = () => {
   const dispatch = useDispatch();
   const { initialized } = useSelector((s) => s.auth);
   const location = useLocation();
+
+  // Initialize Meta Pixel on app load
+  useInitializeMetaPixel();
+
+  // Track page views on route change
+  useTrackPageView();
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -102,6 +112,7 @@ const App = () => {
               <Route path="products/edit/:id" element={<AdminProductForm />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="link-clicks" element={<AdminLinkClicks />} />
             </Route>
           </Routes>
         </Suspense>

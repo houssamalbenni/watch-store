@@ -5,6 +5,7 @@ import {
   HiOutlineCube,
   HiOutlineClipboardList,
   HiOutlineUsers,
+  HiOutlineLink,
   HiOutlineArrowLeft,
   HiOutlineLogout,
 } from 'react-icons/hi';
@@ -16,6 +17,7 @@ const sidebarLinks = [
   { to: '/control-panel/products', icon: HiOutlineCube, label: 'Products' },
   { to: '/control-panel/orders', icon: HiOutlineClipboardList, label: 'Orders' },
   { to: '/control-panel/users', icon: HiOutlineUsers, label: 'Users' },
+  { to: '/control-panel/link-clicks', icon: HiOutlineLink, label: 'Link Clicks' },
 ];
 
 const AdminLayout = () => {
