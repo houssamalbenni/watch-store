@@ -32,35 +32,62 @@ export const usePageTracking = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const trackPageView = async () => {
-      try {
-        const visitorId = getVisitorId();
-        const sessionId = getSessionId();
-        const page = location.pathname + location.search;
-        const referrer = document.referrer || '';
+    let isCancelled = false;
 
-        // Send tracking data to backend
-        await axios.post(`${API_URL}/analytics/track`, {
-          visitorId,
-          sessionId,
-          page,
-          referrer,
-        });
+    // Debounce tracking to prevent duplicates
+    const timeoutId = setTimeout(() => {
+      if (isCancelled) return;
 
-        // Log in development
-        if (import.meta.env.DEV) {
-          console.log('📊 Page tracked:', page);
+      const trackPageView = async () => {
+        try {
+          const visitorId = getVisitorId();
+          const sessionId = getSessionId();
+          const page = location.pathname + location.search;
+          const referrer = document.referrer || '';
+
+          // Create a unique key for this page view in this session
+          const trackingKey = `tracked_${sessionId}_${page}`;
+          
+          // Check if we already tracked this page in this session
+          if (sessionStorage.getItem(trackingKey)) {
+            if (import.meta.env.DEV) {
+              console.log('📊 Page already tracked in this session:', page);
+            }
+            return;
+          }
+
+          // Send tracking data to backend
+          await axios.post(`${API_URL}/analytics/track`, {
+            visitorId,
+            sessionId,
+            page,
+            referrer,
+          });
+
+          // Mark this page as tracked for this session
+          sessionStorage.setItem(trackingKey, 'true');
+
+          // Log in development
+          if (import.meta.env.DEV) {
+            console.log('📊 Page tracked:', page);
+          }
+        } catch (error) {
+          // Silently fail - don't interrupt user experience
+          if (import.meta.env.DEV) {
+            console.warn('Failed to track page view:', error.message);
+          }
         }
-      } catch (error) {
-        // Silently fail - don't interrupt user experience
-        if (import.meta.env.DEV) {
-          console.warn('Failed to track page view:', error.message);
-        }
-      }
+      };
+
+      // Track the page view
+      trackPageView();
+    }, 300); // Wait 300ms before tracking to avoid duplicates
+
+    // Cleanup timeout on unmount or location change
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
     };
-
-    // Track the page view
-    trackPageView();
   }, [location.pathname, location.search]);
 };
 

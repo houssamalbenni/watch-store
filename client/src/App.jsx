@@ -35,7 +35,6 @@ const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const AdminProductForm = lazy(() => import('./pages/admin/AdminProductForm'));
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
-const AdminLinkClicks = lazy(() => import('./pages/admin/AdminLinkClicks'));
 
 // Minimal fallback for lazy chunks
 const PageLoader = () => (
@@ -116,7 +115,6 @@ const App = () => {
               <Route path="products/edit/:id" element={<AdminProductForm />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="users" element={<AdminUsers />} />
-              <Route path="link-clicks" element={<AdminLinkClicks />} />
             </Route>
           </Routes>
         </Suspense>
