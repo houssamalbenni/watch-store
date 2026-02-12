@@ -22,6 +22,7 @@ import uploadRoutes from './routes/upload.js';
 import userRoutes from './routes/users.js';
 import eventsRoutes from './routes/events.js';
 import linkClicksRoutes from './routes/linkClicks.js';
+import analyticsRoutes from './routes/analytics.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,6 +78,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/link-clicks', linkClicksRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // ── Serve uploaded images ──
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));

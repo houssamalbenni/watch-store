@@ -6,6 +6,7 @@ import axios from 'axios';
 
 // Meta Pixel Hooks
 import { useInitializeMetaPixel, useTrackPageView } from './hooks/useMetaPixel';
+import { usePageTracking } from './hooks/usePageTracking';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -53,6 +54,9 @@ const App = () => {
 
   // Track page views on route change
   useTrackPageView();
+
+  // Track all page visits for analytics
+  usePageTracking();
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');

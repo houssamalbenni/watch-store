@@ -9,6 +9,7 @@ import { fetchProductById, fetchProducts, clearCurrentProduct } from '../store/s
 import { addToCart } from '../store/slices/cartSlice';
 import ProductCard from '../components/ProductCard';
 import Skeleton from '../components/Skeleton';
+import { useLinkClickTracking } from '../hooks/useLinkClickTracking';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -16,6 +17,7 @@ const ProductDetail = () => {
   const { currentProduct: product, loading, items: relatedProducts } = useSelector((s) => s.products);
   const [selectedImage, setSelectedImage] = useState(0);
   const [qty, setQty] = useState(1);
+  const { trackLinkClick } = useLinkClickTracking();
 
   useEffect(() => {
     dispatch(fetchProductById(id));
@@ -160,15 +162,21 @@ const ProductDetail = () => {
             </div>
 
             {/* WhatsApp Buy Button */}
-            <a
-              href={`https://wa.me/96181391688?text=${encodeURIComponent(`Hi, I'm interested in buying *${product.title}* ($${displayPrice.toLocaleString()}) from Sa3ati.\n\nProduct link: ${window.location.href}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={async () => {
+                // Track the click
+                await trackLinkClick('whatsapp', product._id, `https://wa.me/96181391688`);
+                // Open WhatsApp
+                window.open(
+                  `https://wa.me/96181391688?text=${encodeURIComponent(`Hi, I'm interested in buying *${product.title}* ($${displayPrice.toLocaleString()}) from Sa3ati.\n\nProduct link: ${window.location.href}`)}`,
+                  '_blank'
+                );
+              }}
               className="mt-4 flex items-center justify-center gap-3 py-3 px-6 bg-[#25D366] text-white font-semibold text-sm tracking-wider hover:bg-[#1da851] transition-colors"
             >
               <FaWhatsapp className="w-5 h-5" />
               Buy via WhatsApp
-            </a>
+            </button>
 
             {/* Specs */}
             <div className="mt-10 border-t border-luxury-gray-dark/30 pt-8">

@@ -5,20 +5,27 @@ import {
   HiOutlineClipboardList,
   HiOutlineCube,
   HiOutlineTrendingUp,
+  HiOutlineEye,
+  HiOutlineUsers,
 } from 'react-icons/hi';
 import api from '../../lib/api';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
+  const [visitorStats, setVisitorStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await api.get('/orders/stats');
-        setStats(data);
-      } catch {
-        // ignore
+        const [ordersData, analyticsData] = await Promise.all([
+          api.get('/orders/stats'),
+          api.get('/analytics/stats?days=7'),
+        ]);
+        setStats(ordersData.data);
+        setVisitorStats(analyticsData.data.data);
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
       } finally {
         setLoading(false);
       }
@@ -64,7 +71,7 @@ const Dashboard = () => {
       <h1 className="text-3xl font-serif mb-8">Dashboard</h1>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
         {cards.map((card, i) => (
           <motion.div
             key={card.label}
@@ -91,6 +98,140 @@ const Dashboard = () => {
           </motion.div>
         ))}
       </div>
+
+      {/* Visitor Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="card-luxury p-6 border-2 border-yellow-500/30"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-luxury-gray text-sm">Unique Visitors (7d)</p>
+              <p className="text-3xl font-semibold mt-2 text-yellow-400">
+                {loading ? (
+                  <span className="skeleton inline-block w-24 h-8 rounded" />
+                ) : (
+                  visitorStats?.summary?.uniqueVisitors || 0
+                )}
+              </p>
+            </div>
+            <div className="p-3 rounded bg-yellow-400/10">
+              <HiOutlineUsers className="w-6 h-6 text-yellow-400" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="card-luxury p-6 border-2 border-blue-500/30"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-luxury-gray text-sm">Total Page Views (7d)</p>
+              <p className="text-3xl font-semibold mt-2 text-blue-400">
+                {loading ? (
+                  <span className="skeleton inline-block w-24 h-8 rounded" />
+                ) : (
+                  visitorStats?.summary?.totalViews || 0
+                )}
+              </p>
+            </div>
+            <div className="p-3 rounded bg-blue-400/10">
+              <HiOutlineEye className="w-6 h-6 text-blue-400" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="card-luxury p-6"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-luxury-gray text-sm">Today's Visitors</p>
+              <p className="text-3xl font-semibold mt-2 text-green-400">
+                {loading ? (
+                  <span className="skeleton inline-block w-24 h-8 rounded" />
+                ) : (
+                  visitorStats?.today?.visitors || 0
+                )}
+              </p>
+            </div>
+            <div className="p-3 rounded bg-green-400/10">
+              <HiOutlineUsers className="w-6 h-6 text-green-400" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="card-luxury p-6"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-luxury-gray text-sm">Avg. Views/Visitor</p>
+              <p className="text-3xl font-semibold mt-2 text-purple-400">
+                {loading ? (
+                  <span className="skeleton inline-block w-24 h-8 rounded" />
+                ) : (
+                  visitorStats?.summary?.avgViewsPerVisitor || '0'
+                )}
+              </p>
+            </div>
+            <div className="p-3 rounded bg-purple-400/10">
+              <HiOutlineTrendingUp className="w-6 h-6 text-purple-400" />
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Device Breakdown */}
+      {!loading && visitorStats?.deviceBreakdown && visitorStats.deviceBreakdown.length > 0 && (
+        <div className="card-luxury p-8 mb-12">
+          <h2 className="text-xl font-serif mb-6">Visitors by Device (Last 7 Days)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {visitorStats.deviceBreakdown.map((device) => {
+              const total = visitorStats.summary.totalViews;
+              const percentage = total > 0 ? ((device.count / total) * 100).toFixed(1) : 0;
+              const deviceLabels = {
+                mobile: { label: 'Mobile', icon: '📱', color: 'text-blue-400' },
+                desktop: { label: 'Desktop', icon: '💻', color: 'text-green-400' },
+                tablet: { label: 'Tablet', icon: '📱', color: 'text-purple-400' },
+                unknown: { label: 'Unknown', icon: '❓', color: 'text-gray-400' },
+              };
+              const info = deviceLabels[device._id] || deviceLabels.unknown;
+              
+              return (
+                <div key={device._id} className="bg-luxury-dark p-6 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{info.icon}</span>
+                      <span className="text-lg font-medium capitalize">{info.label}</span>
+                    </div>
+                    <span className={`text-2xl font-bold ${info.color}`}>{device.count}</span>
+                  </div>
+                  <div className="w-full bg-luxury-gray-dark/30 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full ${info.color.replace('text-', 'bg-')}`}
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  <p className="text-luxury-gray text-sm mt-2">{percentage}% of total views</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Best Sellers */}
       <div className="card-luxury p-8">
