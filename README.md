@@ -22,7 +22,7 @@ A full-stack luxury watch e-commerce platform built with the **MERN stack** (Mon
 ### Admin (Hidden Control Panel)
 - **Dashboard** with KPIs (revenue, orders, products, avg order)
 - **Products CRUD** — add, edit, delete, toggle featured, manage stock
-- **Image Upload** via Cloudinary
+- **Image Upload** via Supabase Storage
 - **Orders Management** — view all, filter by status, update status
 - **Best Sellers** analytics
 
@@ -52,7 +52,7 @@ sa3ati/
 │   └── index.html
 ├── server/                 # Express backend
 │   ├── src/
-│   │   ├── config/         # DB, Cloudinary, logger, env
+│   │   ├── config/         # DB, Supabase, logger, env
 │   │   ├── controllers/    # Route handlers
 │   │   ├── middleware/      # Auth, validation, error handler
 │   │   ├── models/         # Mongoose schemas
@@ -71,7 +71,7 @@ sa3ati/
 ### Prerequisites
 - **Node.js** 18+
 - **MongoDB** (local or Atlas)
-- **Cloudinary** account (for image uploads)
+- **Supabase** account (for image uploads)
 
 ### 1. Clone & Install
 
@@ -98,9 +98,9 @@ JWT_ACCESS_SECRET=your_strong_secret_here
 JWT_REFRESH_SECRET=another_strong_secret_here
 JWT_ACCESS_EXPIRES=15m
 JWT_REFRESH_EXPIRES=7d
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SUPABASE_BUCKET=product-images
 CLIENT_URL=http://localhost:5173
 ADMIN_EMAIL=admin@sa3ati.com
 ADMIN_PASSWORD=Admin@12345
@@ -235,7 +235,7 @@ Authorization: Bearer <admin_token>
   "price": 3500,
   "description": "A stunning gold timepiece...",
   "specifications": { "caseSize": "42mm", "movement": "Automatic", "gender": "men" },
-  "images": ["https://res.cloudinary.com/..."],
+  "images": ["https://your-project.supabase.co/storage/v1/object/public/product-images/..."],
   "stock": 10,
   "featured": true,
   "tags": ["gold", "luxury"]
@@ -281,7 +281,7 @@ Authorization: Bearer <token>
 | Frontend | React 18, Vite, TailwindCSS, Redux Toolkit, React Router, React Hook Form, Zod, Framer Motion |
 | Backend | Node.js, Express, Mongoose, JWT, bcrypt, Zod, Helmet, CORS, Morgan |
 | Database | MongoDB |
-| Storage | Cloudinary |
+| Storage | Supabase Storage |
 | State | Redux Toolkit (auth, cart, products) |
 
 ---

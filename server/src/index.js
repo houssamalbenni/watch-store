@@ -1,6 +1,4 @@
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -23,9 +21,6 @@ import userRoutes from './routes/users.js';
 import eventsRoutes from './routes/events.js';
 import linkClicksRoutes from './routes/linkClicks.js';
 import analyticsRoutes from './routes/analytics.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -79,9 +74,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/link-clicks', linkClicksRoutes);
 app.use('/api/analytics', analyticsRoutes);
-
-// ── Serve uploaded images ──
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Health — also warms DB connection
 app.get('/api/health', async (_req, res) => {

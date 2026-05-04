@@ -38,7 +38,7 @@ const productSchema = new mongoose.Schema(
     },
     images: [
       {
-        type: String, // Cloudinary URL
+        type: String, // Image URL
       },
     ],
     stock: {
