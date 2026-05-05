@@ -4,12 +4,14 @@ import config from '../config/index.js';
 /** Verify access token from cookie or Authorization header */
 const authenticate = async (req, res, next) => {
   try {
-    let token = req.cookies?.accessToken;
+    let token;
 
-    // Fallback to Authorization header
-    if (!token) {
-      const auth = req.headers.authorization;
-      if (auth?.startsWith('Bearer ')) token = auth.split(' ')[1];
+    // Prefer Authorization header (more reliable across domains)
+    const auth = req.headers.authorization;
+    if (auth?.startsWith('Bearer ')) {
+      token = auth.split(' ')[1];
+    } else {
+      token = req.cookies?.accessToken;
     }
 
     if (!token) {
