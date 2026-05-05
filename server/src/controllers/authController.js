@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import config from '../config/index.js';
 import User from '../models/User.js';
 
+const normalizeEmail = (email) => email?.trim().toLowerCase();
+
 /** Helper: generate tokens */
 const generateTokens = (userId, role) => {
   const accessToken = jwt.sign({ id: userId, role }, config.jwt.accessSecret, {
@@ -37,12 +39,13 @@ const setTokenCookies = (res, accessToken, refreshToken) => {
 export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    const exists = await User.findOne({ email });
+    const exists = await User.findOne({ email: normalizedEmail });
     if (exists) return res.status(409).json({ message: 'Email already registered' });
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await User.create({ name, email, passwordHash });
+    const user = await User.create({ name, email: normalizedEmail, passwordHash });
 
     const { accessToken, refreshToken } = generateTokens(user._id, user.role);
     user.refreshToken = refreshToken;
@@ -63,7 +66,8 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const normalizedEmail = normalizeEmail(email);
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
     const valid = await bcrypt.compare(password, user.passwordHash);
