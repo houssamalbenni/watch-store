@@ -257,9 +257,11 @@ const hashEmailForMeta = async (email) => {
  * @param {Object} eventData - Event data payload
  * @param {string} eventId - Unique event ID for deduplication
  */
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
 export const sendServerEvent = async (eventName, eventData, eventId) => {
   try {
-    const response = await fetch('/api/events/track', {
+    const response = await fetch(`${API_URL}/events/track`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
