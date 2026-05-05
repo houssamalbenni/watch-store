@@ -16,16 +16,18 @@ const generateTokens = (userId, role) => {
 
 /** Helper: set cookies */
 const setTokenCookies = (res, accessToken, refreshToken) => {
+  const isProd = config.nodeEnv === 'production';
+  const sameSite = isProd ? 'none' : 'lax';
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
-    secure: config.nodeEnv === 'production',
-    sameSite: 'lax',
+    secure: isProd,
+    sameSite,
     maxAge: 15 * 60 * 1000, // 15 min
   });
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: config.nodeEnv === 'production',
-    sameSite: 'lax',
+    secure: isProd,
+    sameSite,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     path: '/api/auth', // only sent to auth routes
   });

@@ -24,6 +24,9 @@ import analyticsRoutes from './routes/analytics.js';
 
 const app = express();
 
+// Trust proxy for deployments behind a reverse proxy (Render, etc.)
+app.set('trust proxy', 1);
+
 // ── Security & Parsing ──
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
