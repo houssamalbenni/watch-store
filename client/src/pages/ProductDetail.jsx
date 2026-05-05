@@ -90,12 +90,15 @@ const ProductDetail = () => {
                 <video
                   src={activeMedia.src}
                   controls
+                  preload="metadata"
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <img
                   src={activeMedia?.src || 'https://via.placeholder.com/800x800?text=Sa3ati'}
                   alt={product.title}
+                  loading="eager"
+                  fetchPriority="high"
                   className="w-full h-full object-cover"
                 />
               )}
@@ -111,9 +114,19 @@ const ProductDetail = () => {
                     }`}
                   >
                     {item.type === 'video' ? (
-                      <video src={item.src} muted className="w-full h-full object-cover" />
+                      <video
+                        src={item.src}
+                        muted
+                        preload="metadata"
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
-                      <img src={item.src} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={item.src}
+                        alt=""
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
                     )}
                   </button>
                 ))}
