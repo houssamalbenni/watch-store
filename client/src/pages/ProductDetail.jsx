@@ -15,8 +15,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { currentProduct: product, loading, items: relatedProducts } = useSelector((s) => s.products);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedVideo, setSelectedVideo] = useState(0);
+  const [selectedMedia, setSelectedMedia] = useState(0);
   const [qty, setQty] = useState(1);
   const { trackLinkClick } = useLinkClickTracking();
 
@@ -66,6 +65,11 @@ const ProductDetail = () => {
   const displayPrice = product.discountPrice || product.price;
   const hasDiscount = product.discountPrice && product.discountPrice < product.price;
   const specs = product.specifications || {};
+  const mediaItems = [
+    ...(product.images || []).map((src) => ({ type: 'image', src })),
+    ...(product.videos || []).map((src) => ({ type: 'video', src })),
+  ];
+  const activeMedia = mediaItems[selectedMedia];
 
   return (
     <div className="pt-8 pb-16">
@@ -82,48 +86,35 @@ const ProductDetail = () => {
           {/* Gallery */}
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}>
             <div className="aspect-square overflow-hidden bg-luxury-dark">
-              {product.videos?.length > 0 ? (
+              {activeMedia?.type === 'video' ? (
                 <video
-                  src={product.videos[selectedVideo]}
+                  src={activeMedia.src}
                   controls
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <img
-                  src={product.images?.[selectedImage] || 'https://via.placeholder.com/800x800?text=Sa3ati'}
+                  src={activeMedia?.src || 'https://via.placeholder.com/800x800?text=Sa3ati'}
                   alt={product.title}
                   className="w-full h-full object-cover"
                 />
               )}
             </div>
-            {product.images?.length > 1 && (
-              <div className="flex gap-3 mt-4">
-                {product.images.map((img, i) => (
+            {mediaItems.length > 1 && (
+              <div className="flex flex-wrap gap-3 mt-4">
+                {mediaItems.map((item, i) => (
                   <button
-                    key={i}
-                    onClick={() => setSelectedImage(i)}
+                    key={`${item.type}-${item.src}`}
+                    onClick={() => setSelectedMedia(i)}
                     className={`w-20 h-20 overflow-hidden border-2 transition-colors ${
-                      i === selectedImage ? 'border-luxury-gold' : 'border-luxury-gray-dark hover:border-luxury-gray'
+                      i === selectedMedia ? 'border-luxury-gold' : 'border-luxury-gray-dark hover:border-luxury-gray'
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-            {product.videos?.length > 1 && (
-              <div className="flex gap-3 mt-4">
-                {product.videos.map((video, i) => (
-                  <button
-                    key={video}
-                    onClick={() => setSelectedVideo(i)}
-                    className={`w-20 h-20 overflow-hidden border-2 transition-colors ${
-                      i === selectedVideo ? 'border-luxury-gold' : 'border-luxury-gray-dark hover:border-luxury-gray'
-                    }`}
-                  >
-                    <div className="w-full h-full bg-black text-luxury-white text-[10px] flex items-center justify-center">
-                      Video {i + 1}
-                    </div>
+                    {item.type === 'video' ? (
+                      <video src={item.src} muted className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={item.src} alt="" className="w-full h-full object-cover" />
+                    )}
                   </button>
                 ))}
               </div>
