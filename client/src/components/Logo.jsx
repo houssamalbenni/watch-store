@@ -63,7 +63,6 @@ const Logo = ({ className = '', size = 'md' }) => {
         fontSize="9"
         fill="#8A8A8A"
         letterSpacing="4"
-        textTransform="uppercase"
       >
         LUXURY TIMEPIECES
       </text>

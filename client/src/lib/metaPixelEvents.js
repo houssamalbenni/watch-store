@@ -29,8 +29,11 @@ export const generateEventId = () => {
  * Browser: Automatic via Pixel (if initialized)
  * Server: Optional manual trigger for SPA navigation tracking
  */
+const getFbq = () => (typeof window !== 'undefined' ? window.fbq : undefined);
+
 export const trackPageView = (eventId = null) => {
-  if (typeof window !== 'undefined' && fbq) {
+  const fbq = getFbq();
+  if (fbq) {
     const id = eventId || generateEventId();
     fbq('track', META_EVENTS.PAGE_VIEW, { eventID: id });
     return id;
@@ -50,7 +53,8 @@ export const trackPageView = (eventId = null) => {
  * @param {string} eventId - Optional event ID for deduplication
  */
 export const trackViewContent = (product, eventId = null) => {
-  if (typeof window === 'undefined' || !fbq) return null;
+  const fbq = getFbq();
+  if (!fbq) return null;
 
   const id = eventId || generateEventId();
 
@@ -84,7 +88,8 @@ export const trackViewContent = (product, eventId = null) => {
  * @param {string} eventId - Optional event ID for deduplication
  */
 export const trackAddToCart = (item, eventId = null) => {
-  if (typeof window === 'undefined' || !fbq) return null;
+  const fbq = getFbq();
+  if (!fbq) return null;
 
   const id = eventId || generateEventId();
 
@@ -117,7 +122,8 @@ export const trackAddToCart = (item, eventId = null) => {
  * @param {string} eventId - Optional event ID for deduplication
  */
 export const trackInitiateCheckout = (checkoutData, eventId = null) => {
-  if (typeof window === 'undefined' || !fbq) return null;
+  const fbq = getFbq();
+  if (!fbq) return null;
 
   const id = eventId || generateEventId();
 
@@ -151,7 +157,8 @@ export const trackInitiateCheckout = (checkoutData, eventId = null) => {
  * @param {string} eventId - Optional event ID for deduplication
  */
 export const trackPurchase = (purchaseData, eventId = null) => {
-  if (typeof window === 'undefined' || !fbq) return null;
+  const fbq = getFbq();
+  if (!fbq) return null;
 
   const id = eventId || generateEventId();
 
@@ -183,7 +190,8 @@ export const trackPurchase = (purchaseData, eventId = null) => {
  * @param {string} eventId - Optional event ID for deduplication
  */
 export const trackLead = (leadData, eventId = null) => {
-  if (typeof window === 'undefined' || !fbq) return null;
+  const fbq = getFbq();
+  if (!fbq) return null;
 
   const id = eventId || generateEventId();
 
@@ -366,9 +374,9 @@ export const initializeMetaPixel = (pixelId) => {
   })();
 
   // Initialize pixel with ID
+  const fbq = getFbq();
+  if (!fbq) return;
   fbq('init', pixelId);
-
-  // Track initial page view
   fbq('track', 'PageView');
 
   console.log(`Meta Pixel initialized with ID: ${pixelId}`);
