@@ -16,6 +16,7 @@ const ProductDetail = () => {
   const dispatch = useDispatch();
   const { currentProduct: product, loading, items: relatedProducts } = useSelector((s) => s.products);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedVideo, setSelectedVideo] = useState(0);
   const [qty, setQty] = useState(1);
   const { trackLinkClick } = useLinkClickTracking();
 
@@ -81,11 +82,19 @@ const ProductDetail = () => {
           {/* Gallery */}
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}>
             <div className="aspect-square overflow-hidden bg-luxury-dark">
-              <img
-                src={product.images?.[selectedImage] || 'https://via.placeholder.com/800x800?text=Sa3ati'}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
+              {product.videos?.length > 0 ? (
+                <video
+                  src={product.videos[selectedVideo]}
+                  controls
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img
+                  src={product.images?.[selectedImage] || 'https://via.placeholder.com/800x800?text=Sa3ati'}
+                  alt={product.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
             {product.images?.length > 1 && (
               <div className="flex gap-3 mt-4">
@@ -98,6 +107,23 @@ const ProductDetail = () => {
                     }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+            {product.videos?.length > 1 && (
+              <div className="flex gap-3 mt-4">
+                {product.videos.map((video, i) => (
+                  <button
+                    key={video}
+                    onClick={() => setSelectedVideo(i)}
+                    className={`w-20 h-20 overflow-hidden border-2 transition-colors ${
+                      i === selectedVideo ? 'border-luxury-gold' : 'border-luxury-gray-dark hover:border-luxury-gray'
+                    }`}
+                  >
+                    <div className="w-full h-full bg-black text-luxury-white text-[10px] flex items-center justify-center">
+                      Video {i + 1}
+                    </div>
                   </button>
                 ))}
               </div>

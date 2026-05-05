@@ -32,6 +32,7 @@ const productSchema = z.object({
     })
     .optional(),
   images: z.array(z.string().url()).optional(),
+  videos: z.array(z.string().url()).optional(),
   stock: z.number().int().min(0).optional(),
   tags: z.array(z.string()).optional(),
   featured: z.boolean().optional(),

@@ -33,7 +33,9 @@ const AdminProductForm = () => {
   const navigate = useNavigate();
   const isEdit = Boolean(id);
   const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadingVideos, setUploadingVideos] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const {
@@ -75,6 +77,7 @@ const AdminProductForm = () => {
           setValue('dialColor', specs.dialColor || '');
           setValue('gender', specs.gender || 'unisex');
           setImages(data.images || []);
+          setVideos(data.videos || []);
         } catch {
           toast.error('Product not found');
           navigate('/control-panel/products');
@@ -109,6 +112,31 @@ const AdminProductForm = () => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleVideoUpload = async (e) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+
+    setUploadingVideos(true);
+    const formData = new FormData();
+    Array.from(files).forEach((f) => formData.append('videos', f));
+
+    try {
+      const { data } = await api.post('/upload/videos', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setVideos((prev) => [...prev, ...data.urls]);
+      toast.success(`${data.urls.length} video(s) uploaded`);
+    } catch {
+      toast.error('Video upload failed');
+    } finally {
+      setUploadingVideos(false);
+    }
+  };
+
+  const removeVideo = (index) => {
+    setVideos((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const onSubmit = async (formData) => {
     setSubmitting(true);
 
@@ -122,6 +150,7 @@ const AdminProductForm = () => {
       featured: formData.featured || false,
       category: formData.category || 'watches',
       images,
+      videos,
       tags: formData.tags ? formData.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
       specifications: {
         caseSize: formData.caseSize || '',
@@ -293,6 +322,41 @@ const AdminProductForm = () => {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Videos */}
+        <div className="card-luxury p-8">
+          <h2 className="text-lg font-serif mb-6">Videos</h2>
+          <div className="flex flex-col gap-4">
+            <label className="flex items-center gap-3 text-sm text-luxury-gray cursor-pointer">
+              <HiOutlineUpload className="w-5 h-5" />
+              <span>{uploadingVideos ? 'Uploading...' : 'Upload videos'}</span>
+              <input
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                multiple
+                onChange={handleVideoUpload}
+                className="hidden"
+              />
+            </label>
+
+            {videos.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {videos.map((video, index) => (
+                  <div key={video} className="relative border border-luxury-gray-dark p-3">
+                    <button
+                      type="button"
+                      onClick={() => removeVideo(index)}
+                      className="absolute top-2 right-2 bg-black/70 text-white p-1 rounded-full hover:bg-black"
+                    >
+                      <HiOutlineX className="w-4 h-4" />
+                    </button>
+                    <video src={video} controls className="w-full h-48 bg-black" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Submit */}
