@@ -28,6 +28,85 @@ const productFormSchema = z.object({
   tags: z.string().optional(),
 });
 
+const getImageCompressionSettings = () => {
+  if (typeof navigator === 'undefined') {
+    return { maxSize: 1600, quality: 0.85 };
+  }
+
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (!connection) {
+    return { maxSize: 1600, quality: 0.85 };
+  }
+
+  if (connection.saveData) {
+    return { maxSize: 1200, quality: 0.6 };
+  }
+
+  switch (connection.effectiveType) {
+    case 'slow-2g':
+      return { maxSize: 1000, quality: 0.55 };
+    case '2g':
+      return { maxSize: 1200, quality: 0.6 };
+    case '3g':
+      return { maxSize: 1400, quality: 0.7 };
+    case '4g':
+      return { maxSize: 1600, quality: 0.85 };
+    default:
+      return { maxSize: 1600, quality: 0.85 };
+  }
+};
+
+const loadImage = (file) => new Promise((resolve, reject) => {
+  const img = new Image();
+  img.onload = () => resolve(img);
+  img.onerror = reject;
+  img.src = URL.createObjectURL(file);
+});
+
+const compressImageFile = async (file) => {
+  if (!file?.type?.startsWith('image/')) return file;
+
+  const { maxSize, quality } = getImageCompressionSettings();
+  const outputType = file.type === 'image/png'
+    ? 'image/png'
+    : file.type === 'image/webp'
+      ? 'image/webp'
+      : 'image/jpeg';
+
+  const image = await loadImage(file);
+  const ratio = Math.min(1, maxSize / image.width, maxSize / image.height);
+  const targetWidth = Math.max(1, Math.round(image.width * ratio));
+  const targetHeight = Math.max(1, Math.round(image.height * ratio));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+  const blob = await new Promise((resolve) => {
+    if (outputType === 'image/png') {
+      canvas.toBlob(resolve, outputType);
+    } else {
+      canvas.toBlob(resolve, outputType, quality);
+    }
+  });
+
+  URL.revokeObjectURL(image.src);
+
+  if (!blob) return file;
+
+  const extension = outputType === 'image/png'
+    ? 'png'
+    : outputType === 'image/webp'
+      ? 'webp'
+      : 'jpg';
+  const baseName = file.name.replace(/\.[^/.]+$/, '');
+  const newName = `${baseName}.${extension}`;
+
+  return new File([blob], newName, { type: outputType });
+};
+
 const AdminProductForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -93,7 +172,17 @@ const AdminProductForm = () => {
 
     setUploading(true);
     const formData = new FormData();
-    Array.from(files).forEach((f) => formData.append('images', f));
+    const processedFiles = await Promise.all(
+      Array.from(files).map(async (file) => {
+        try {
+          return await compressImageFile(file);
+        } catch (err) {
+          console.warn('Image compression failed, uploading original file.', err);
+          return file;
+        }
+      })
+    );
+    processedFiles.forEach((file) => formData.append('images', file));
 
     try {
       const { data } = await api.post('/upload', formData, {
